@@ -1,0 +1,82 @@
+---
+title: 'Assignment 2: Team Project'
+author: "Olivia Veal"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(scales)
+library(ggplot2)
+library(knitr)
+```
+```{r}
+access_data<-read.csv("access-to-clean-fuels-for-cooking-vs-gdp-per-capita.csv")
+```
+
+```{r}
+kable(head(access_data), caption = "Variables of the Dataset")
+```
+
+What is the relationship between GDP per capita and access to clean fuels?
+
+```{r}
+clean_data <- access_data %>%
+  select(Entity, Year, `GDP.per.capita`, Population, `Access.to.clean.fuels.and.technologies.for.cooking`) %>%
+  drop_na()
+
+
+ggplot(clean_data, aes(x = GDP.per.capita, y = Access.to.clean.fuels.and.technologies.for.cooking)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  scale_x_log10() +
+  labs(title = "Relationship between GDP per capita and Access to Clean Fuels",
+       x = "GDP per capita (log scale)",
+       y = "Access to Clean Fuels (%)") +
+  theme_light()
+```
+
+```{r}
+# Correlation
+cor(clean_data$`GDP.per.capita`, clean_data$`Access.to.clean.fuels.and.technologies.for.cooking`, use = "complete.obs")
+```
+```{r}
+# Linear regression
+model_gdp <- lm(`Access.to.clean.fuels.and.technologies.for.cooking` ~ `GDP.per.capita`, data = clean_data)
+summary(model_gdp)
+```
+What is the relationship between population size and access to clean fuels?
+
+```{r}
+ggplot(clean_data, aes(x = Population, y = Access.to.clean.fuels.and.technologies.for.cooking)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  scale_x_log10() +
+    labs(title = "Relationship between Population and Access to Clean Fuels",
+       x = "Population (log scale)",
+       y = "Access to Clean Fuels (%)") +
+  theme_light()
+```
+```{r}
+ggplot(clean_data, aes(x = Population, y = `Access.to.clean.fuels.and.technologies.for.cooking`)) +
+  geom_hex(bins = 30) +
+  scale_x_log10() +
+  scale_fill_continuous(type = "viridis") +
+  geom_smooth(method = "lm", color = "blue", se = TRUE) +
+  labs(title = "Population vs Access to Clean Fuels (Density Plot)",
+       x = "Population (log scale)",
+       y = "Access to Clean Fuels (%)") +
+  theme_minimal()
+```
+```{r}
+# Correlation
+cor(clean_data$`Population`, clean_data$`Access.to.clean.fuels.and.technologies.for.cooking`, use = "complete.obs")
+```
+
+
+
