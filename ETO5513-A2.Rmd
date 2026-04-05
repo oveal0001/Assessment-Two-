@@ -2,29 +2,248 @@
 title: "Assessment 2"
 author: "Marlies Smit and Olivia Veal"
 date: "2026-04-01"
-output: html_document
+output:
+  bookdown::html_document2:
+    number_sections: false
+
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+## Question 3:
+How does each region compare in access to clean fuels for cooking?
+The following section examines the difference in access to clean fuels for cooking for each region.
+
+
+```{r Loading libraries and data, include=FALSE}
+library(bookdown)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(tidyverse)
+library(ggplot2)
+library(plotly)
+library(scales)
+
+library(viridis)
+# colours were selected from the viridis pallete which is a colour blind friendly pallete
+colors = c("#E16462FF", "#6A00A8FF", "#FCA636FF", "#0D0887FF", "#B12A90FF",  "#FF60A8", "#C05780")
+
+# Get rid of scientific notation
+options(scipen = 999)
+
+options(digits = 3)
+
+
+csv = read.csv("Data/access-to-clean-fuels-for-cooking-vs-gdp-per-capita.csv")
+# csv
 ```
 
-## R Markdown
+<br>
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+### Figure 3.1 - Access statistics by region
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
+```{r csv viewing}
+csv <- csv %>%
+  rename("Access" = "Access.to.clean.fuels.and.technologies.for.cooking") %>%
+  rename("GDP_per_capita" = "GDP.per.capita") %>%
+  rename("OWID_world_region" = "World.region.according.to.OWID")
 ```
 
-## Including Plots
+```{r Dealing with missing data}
+# Getting 2023 data for each region
+reg <- subset(csv, Year == "2000" | Year == "2023")
+reg <- subset(reg, OWID_world_region != "")
 
-You can also embed plots, for example:
+reg <- reg %>%
+  # Select essential columns
+  select(Entity, Code, Year, Access, OWID_world_region)
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+# # returns data that does not contain (UN) or (WHO)
+reg <- reg[!grepl("(UN)|(WHO)", reg$Entity),]
+
+
+# identify missing data
+reg_filtered_out <- reg %>% 
+  filter(if_any(c(Code, OWID_world_region, Access), ~is.na(.)))
+
+
+# Data that is complete for analysis
+# Only countries will have a Code and OWID_world_region
+reg_filtered_in <- reg %>% drop_na()
+# reset index
+rownames(reg_filtered_in) <- NULL
+
+
+# For reference countries that were filtered in or out
+country_filtered_out <- unique(reg_filtered_out$Entity)
+# print(country_filtered_out)
+country_filtered_in <- unique(reg_filtered_in$Entity)
+# print(country_filtered_in)
+
+reg <- reg_filtered_in
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r Formatting data for figure 3.1}
+reg_wide <- reg %>%
+  # pivot wider for the years
+  pivot_wider(
+    names_from = Year,
+    values_from = Access
+  )
+
+# # create new Access change column
+# # backticks to perform calculations for columns with number titles
+reg_wide <- transform(reg_wide, Access_change = `2023` - `2000`)
+
+# reg_wide
+```
+
+```{r Creating 3.1 table, message = FALSE}
+# We want the mean
+reg_mean <- reg_wide %>%
+  group_by(OWID_world_region) %>%
+  summarise(
+    Max_2023 = max(`2023`),
+    Min_2023 = min(`2023`),
+    Mean_2023 = mean(`2023`),
+    Mean_change = mean(Access_change)
+  )
+# reg_mean
+
+# Calculate which percentage of countries are above the global average for 2023
+# get the number of countries in each region
+reg_count <- reg_wide %>%
+  group_by(OWID_world_region) %>%
+  summarise(
+    Country_count = n_distinct(Entity)
+  )
+
+# get global average for 2023
+avg_2023 <- mean(reg_wide$`2023`)
+
+# create a new column
+avg_compare <- reg_wide %>%
+  mutate(Compared_to_average = if_else(`2023` > avg_2023, "Above", "Below"))
+# avg_compare
+
+# Get the number of countries in each region that were above average
+above_count <- avg_compare %>%
+  group_by(OWID_world_region, Compared_to_average) %>%
+  summarise(
+    Above_count = n_distinct(Entity)
+  ) %>% filter(
+    Compared_to_average == "Above"
+  )
+  
+
+reg_merge1 <- merge(above_count, reg_count)
+reg_merge2 <- merge(reg_merge1, reg_mean)
+
+# get percentage above average
+reg_merge3 <- transform(reg_merge2, Percentage_above_average = (Above_count/Country_count)*100)
+
+# convert to percentage with two decimal places
+reg_merge4 <- reg_merge3 %>%
+  mutate(across(where(is.numeric), ~ .x / 100)) %>%
+  mutate(across(where(is.numeric), label_percent(accuracy = 0.01)))
+  
+
+# select final columns for table
+reg_table <- reg_merge4 %>%
+  select(-c(Compared_to_average, Above_count, Country_count))
+# reg_table
+
+```
+
+The following table provides summary statistics to compare each region.
+It shows the max, min and mean for each region in 2023, the change of the average in the past 15 years, and what percentage of the region was above the global average of `r avg_2023`%.
+
+
+```{r Figure 3.1 table}
+# table for regional access
+kable(reg_table, col.names = c(
+  "Region",
+  "Max",
+  "Min",
+  "Mean",
+  "Mean change since 2000",
+  "Percentage above average"),
+  format = "pipe", padding = 15,
+  caption = "Figure 3.1 - Access statistics by region for 2023",
+  align = "r"
+  )
+```
+
+```{r key statistics}
+
+Max_Europe <- reg_table[3, "Mean_2023"]
+
+Change_Asia <- reg_table[2, "Mean_change"]
+```
+
+
+From the table we notice the following:
+
+- All regions had at least one country with 100% access
+- Europe had the highest level of access on average at `r Max_Europe`
+- South America was the only region with all countries above the 2023 global average (`r avg_2023`%)
+- Asia had the greatest increase to access at `r Change_Asia` while all other regions were less than 20%
+- Africa has the lowest Min, Mean and Percentage above average
+
+
+
+<br>
+
+### Figure 3.2 - Regional average boxplot
+
+The following box plot will provide a visual representation of the range of access within each region. The colour of each point shows which quartile every country falls in country falls in regardless of region. By hovering over each country, the percentage of access and the country name is shown.
+
+```{r 3.2 boxplot, fig.width=9, fig.height= 5, warning = FALSE, fig.align='center'}
+reg_qtrs <- reg_wide %>%
+  mutate(Quartiles = ntile(`2023`, 4)) %>%
+  mutate(
+    Quartiles = case_when(
+    Quartiles == 1 ~ "First quartile",
+    Quartiles == 2 ~ "Second quartile",
+    Quartiles == 3 ~ "Third quartile",
+    Quartiles == 4 ~ "Fourth quartile")) %>%
+  mutate(
+    Quartiles_ordered = factor(Quartiles,
+               levels = c(
+                 "First quartile",
+                 "Second quartile",
+                 "Third quartile",
+                 "Fourth quartile"))
+  )
+
+reg_box <- reg_qtrs  %>%
+  ggplot(aes(y = `2023`, x = OWID_world_region, label = Entity)) +
+  geom_boxplot() +
+  geom_jitter(aes(colour = Quartiles_ordered)) +
+  theme_light() +
+  coord_flip() +
+  scale_color_manual(values = colors) +
+  labs(x = NULL, y = "Access (%)",
+       title = "Figure 3.2 - Regional average boxplot",
+       colour = "Global quartiles") +
+  scale_y_continuous(breaks = seq(0, 100, by = 10))
+
+
+fig_3.2 <- ggplotly(reg_box, tooltip = c("Entity", "2023"))
+fig_3.2
+```
+
+ *The black dots with no country represent the quartiles*
+ 
+ Figure 3.2 provided the following insights:
+ 
+ - To be in the highest quartile countries need to have 100% access
+ - Europe had the smallest interquartile range, whereas Oceania had the largest
+ - Africa was the only region to have their average (as well a their third quartile) below the global average
+ 
+
+## Question 4:
+Are there countries that have high access to clean fuels relative to their GDP per capita, and do they have anything in common?
+
+How do you determine if something is high compared to another variable?
