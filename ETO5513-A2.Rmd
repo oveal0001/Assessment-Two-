@@ -30,10 +30,10 @@ colors = c("#E16462FF", "#6A00A8FF", "#FCA636FF", "#0D0887FF", "#B12A90FF",  "#F
 # Get rid of scientific notation
 options(scipen = 999)
 
-options(digits = 3)
+options(digits = 2)
 
 
-csv = read.csv("Data/access-to-clean-fuels-for-cooking-vs-gdp-per-capita.csv")
+csv1 = read.csv("Data/access-to-clean-fuels-for-cooking-vs-gdp-per-capita.csv")
 # csv
 ```
 
@@ -43,23 +43,24 @@ csv = read.csv("Data/access-to-clean-fuels-for-cooking-vs-gdp-per-capita.csv")
 
 
 ```{r csv viewing}
-csv <- csv %>%
+csv2 <- csv1 %>%
   rename("Access" = "Access.to.clean.fuels.and.technologies.for.cooking") %>%
+  rename("Country" = "Entity") %>%
   rename("GDP_per_capita" = "GDP.per.capita") %>%
   rename("OWID_world_region" = "World.region.according.to.OWID")
 ```
 
 ```{r Dealing with missing data}
 # Getting 2023 data for each region
-reg <- subset(csv, Year == "2000" | Year == "2023")
+reg <- subset(csv2, Year == "2000" | Year == "2023")
 reg <- subset(reg, OWID_world_region != "")
 
 reg <- reg %>%
   # Select essential columns
-  select(Entity, Code, Year, Access, OWID_world_region)
+  select(Country, Code, Year, Access, OWID_world_region)
 
 # # returns data that does not contain (UN) or (WHO)
-reg <- reg[!grepl("(UN)|(WHO)", reg$Entity),]
+reg <- reg[!grepl("(UN)|(WHO)", reg$Country),]
 
 
 # identify missing data
@@ -75,9 +76,9 @@ rownames(reg_filtered_in) <- NULL
 
 
 # For reference countries that were filtered in or out
-country_filtered_out <- unique(reg_filtered_out$Entity)
+country_filtered_out <- unique(reg_filtered_out$Country)
 # print(country_filtered_out)
-country_filtered_in <- unique(reg_filtered_in$Entity)
+country_filtered_in <- unique(reg_filtered_in$Country)
 # print(country_filtered_in)
 
 reg <- reg_filtered_in
@@ -116,7 +117,7 @@ reg_mean <- reg_wide %>%
 reg_count <- reg_wide %>%
   group_by(OWID_world_region) %>%
   summarise(
-    Country_count = n_distinct(Entity)
+    Country_count = n_distinct(Country)
   )
 
 # get global average for 2023
@@ -131,7 +132,7 @@ avg_compare <- reg_wide %>%
 above_count <- avg_compare %>%
   group_by(OWID_world_region, Compared_to_average) %>%
   summarise(
-    Above_count = n_distinct(Entity)
+    Above_count = n_distinct(Country)
   ) %>% filter(
     Compared_to_average == "Above"
   )
@@ -218,7 +219,7 @@ reg_qtrs <- reg_wide %>%
   )
 
 reg_box <- reg_qtrs  %>%
-  ggplot(aes(y = `2023`, x = OWID_world_region, label = Entity)) +
+  ggplot(aes(y = `2023`, x = OWID_world_region, label = Country)) +
   geom_boxplot() +
   geom_jitter(aes(colour = Quartiles_ordered)) +
   theme_light() +
@@ -230,7 +231,7 @@ reg_box <- reg_qtrs  %>%
   scale_y_continuous(breaks = seq(0, 100, by = 10))
 
 
-fig_3.2 <- ggplotly(reg_box, tooltip = c("Entity", "2023"))
+fig_3.2 <- ggplotly(reg_box, tooltip = c("Country", "2023"))
 fig_3.2
 ```
 
@@ -246,4 +247,121 @@ fig_3.2
 ## Question 4:
 Are there countries that have high access to clean fuels relative to their GDP per capita, and do they have anything in common?
 
-How do you determine if something is high compared to another variable?
+### Figure 4.1 - Top ten countries with high access compared to their GDP per capita
+
+```{r identifying outliers with residuals}
+# create a linear regression model
+
+# clean data
+relation1 <- merge(reg, csv2)
+relation2 <- subset(relation1, Year == "2023")
+# 10 countries are missing GDP per capita data
+relation3 <- relation2[!is.na(relation2$GDP_per_capita), ]
+
+# reset index
+rownames(relation2) <- NULL
+
+# create a regression model
+model <- lm(Access ~ GDP_per_capita, data = relation3)
+
+# residuals tell how far each point is from the regression line
+relation3$Residuals <- resid(model)
+
+relation <- relation3
+# relation
+```
+
+
+```{r Get the top ten}
+high_resid1 <- relation %>% 
+  select(Country, Access, GDP_per_capita, Residuals, OWID_world_region, Population) %>%
+  # arrange by Residuals
+  arrange(desc(Residuals))
+
+
+high_resid2 <- high_resid1 %>%
+  mutate(across(Access, ~ .x / 100)) %>%
+  mutate(across(Access, label_percent(accuracy = 0.01))) %>%
+  mutate(GDP_per_capita = round(GDP_per_capita, 2)) %>%
+  mutate(GDP_per_capita = paste0("$", GDP_per_capita))
+
+# reg_merge4 <- reg_merge3 %>%
+#   mutate(across(where(is.numeric), ~ .x / 100)) %>%
+#   mutate(across(where(is.numeric), label_percent(accuracy = 0.01)))
+
+high_resid <- high_resid2
+# high_resid
+
+top_ten <- head(high_resid, 10)
+```
+
+
+```{r Figure 4.1 top ten table}
+
+# table for regional access
+kable(top_ten, col.names = c(
+  "Country",
+  "Access",
+  "GDP per capita",
+  "Residuals",
+  "Region",
+  "Population"),
+  format = "pipe", padding = 15,
+  caption = "Figure 4.1 - Top ten countries with high access for their GDP"
+  )
+
+```
+
+Key findings from this table:
+- At a glance we can see that the countries with the ten highest residuals have a relatively similar GDP per capita within a range of just over $8,000.
+- The countries are from all regions except for Europe and South America
+- All countries have a high level of access, at almost 100%
+
+<br>
+
+### Figure 4.1 - Distribution of relative high access for GDP per capita
+
+The following visualisation further investigated countries with a GDP per capita under $17,000 similar to the top ten countries from Figure 4.1. The scatterplot showed the region, GDP per capita, and residuals from our regression analysis for each country and indicated the population by the size of each point.
+
+
+```{r Create grpahic 4.2, fig.width=9, fig.height= 5, warning = FALSE, fig.align='center'}
+# get only countries with a similar GDP
+resid_vis1 <- subset(high_resid1, GDP_per_capita <= 17000)
+
+# change the index to Country for the label
+rownames(resid_vis1) <- resid_vis1$Country
+
+# Put access into percentage format
+resid_vis2 <- resid_vis1 %>%
+  mutate(across(Access, ~ .x / 100)) %>%
+  mutate(across(Access, label_percent(accuracy = 0.01)))
+
+# Create custom label for interactive plot to see country and access (since they aren't variables in the resid_distro ggplot graph)
+resid_vis <- resid_vis2 %>%
+  mutate(country_access = paste0("Country: ", rownames(resid_vis1),
+                                 "<br>Access: ", Access,
+                                 "<br>Population: ", Population))
+
+resid_distro <- ggplot(resid_vis, aes(y = Residuals,
+                      x = GDP_per_capita,
+                      size = Population,
+                      fill = OWID_world_region,
+                      text = country_access)) +
+  geom_point(alpha = 0.5, shape=21, color= "black")+
+  labs(x = "GDP per capita ($)", y = "Residuals", fill = "Region", title = "Figure 4.2 - residuals distribution") +
+  scale_fill_manual(values = colors) +
+  scale_size(range = c(1, 20), name = " ")+
+  theme_light()
+
+
+ggplotly(resid_distro, tooltip = "text")
+```
+
+Key findings from figure 4.2:
+
+- Hovering over each point to see their access. Countries need to have almost 80% access to have a residual of 25 or more.
+- It seems that as countries approached $12,000 they reached a higher percentage of access but as they surpassed \$17,000 their residuals decreased since access was already at 100%.
+- Region did not make an impact on having high residuals for the relationship between GDP per capita and Access.
+- Population did not strongly influence whether a country had high access for GDP per capita. For countries with high residuals over 25:
+  + The largest nation was Indonesia with about 281 million people. 
+  + The smallest nation was Nauru with just under 12,000 people.
