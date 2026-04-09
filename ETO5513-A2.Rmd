@@ -100,6 +100,8 @@ reg_wide <- transform(reg_wide, Access_change = `2023` - `2000`)
 
 ### Question 3 table - Access statistics by region
 
+The following table provides summary statistics to compare each region.
+It shows the max, min and mean for each region in 2023, the change of the average in the past 15 years, and what percentage of the region was above the global average of `r avg_2023`%.
 
 ```{r Creating 3.1 table, message = FALSE}
 # We want the mean
@@ -158,9 +160,6 @@ reg_table <- reg_merge4 %>%
 
 ```
 
-The following table provides summary statistics to compare each region.
-It shows the max, min and mean for each region in 2023, the change of the average in the past 15 years, and what percentage of the region was above the global average of `r avg_2023`%.
-
 
 ```{r, label = "table-access-stats"}
 # table for regional access
@@ -185,21 +184,11 @@ Change_Asia <- reg_table[2, "Mean_change"]
 ```
 
 
-From Table \@ref(tab:table-access-stats) we notice the following:
-
-- All regions had at least one country with 100% access
-- Europe had the highest level of access on average at `r Max_Europe`
-- South America was the only region with all countries above the 2023 global average (`r avg_2023`%)
-- Asia had the greatest increase to access at `r Change_Asia` while all other regions were less than 20%
-- Africa has the lowest Min, Mean and Percentage above average
-
-
-
 <br>
 
 ### Question 3 figure - Regional average boxplot
 
-The following box plot will provide a visual representation of the range of access within each region. The colour of each point shows which quartile every country falls in country falls in regardless of region. By hovering over each country, the percentage of access and the country name is shown.
+The following box plot provided a visual representation of the range of access within each region. The colour of each point shows which quartile every country falls in country falls in regardless of region. By hovering over each country, the percentage of access and the country name is shown.
 
 ```{r 3.2 boxplot, fig.width=9, fig.height= 5, warning = FALSE, fig.align='center'}
 reg_qtrs <- reg_wide %>%
@@ -240,12 +229,6 @@ fig_3.2
 
 
  *The black dots with no country represent the quartiles*
- 
- Figure \@ref(fig:reg-ave-plot) provided the following insights:
- 
- - To be in the highest quartile countries need to have 100% access
- - Europe had the smallest interquartile range, whereas Oceania had the largest
- - Africa was the only region to have their average (as well a their third quartile) below the global average
  
 
 ## Question 4:
@@ -316,13 +299,6 @@ kable(top_ten, col.names = c(
 
 ```
 
-Key findings from Table \@ref(tab:top-ten-table)
-
-- At a glance we can see that the countries with the ten highest residuals have a relatively similar GDP per capita within a range of just over $8,000.
-- The countries are from all regions except for Europe and South America
-- All countries have a high level of access, at almost 100%
-
-<br>
 
 <br>
 
@@ -368,20 +344,11 @@ resid_final
 ```
 
 
-Key findings from Figure \@ref(fig:resid-plot):
-
-- Hovering over each point to see their access. Countries need to have almost 80% access to have a residual of 25 or more.
-- It seems that as countries approached $12,000 they reached a higher percentage of access but as they surpassed \$17,000 their residuals decreased since access was already at 100%.
-- Region did not make an impact on having high residuals for the relationship between GDP per capita and Access.
-- Population did not strongly influence whether a country had high access for GDP per capita. For countries with high residuals over 25:
-  + The largest nation was Indonesia with about 281 million people. 
-  + The smallest nation was Nauru with just under 12,000 people.
-  
 <br>
 
 <br>
   
-## Section analysis(change title later ~250 words):
+## Section analysis for Questions three and four:
 
 
 In this section we investigated how region shapes access, and tried to develop an understanding of what characteristics if any countries that had relatively high access for their wealth (measured in GDP per capita) had in common. The purpose was to identify factors that possible contribute to a high percentage of access for the population, and identify countries with conditions that are appropriate for investment into accessible clean fuels for cooking.
