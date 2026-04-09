@@ -3,11 +3,12 @@ title: "Assessment 2"
 author: "Marlies Smit and Olivia Veal"
 date: "2026-04-01"
 output:
-  bookdown::html_document2:
+  html_document:
     number_sections: false
-    
-
+bibliography: references.bib
+link-citations: true
 ---
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -19,6 +20,7 @@ library(ggplot2)
 library(knitr)
 
 ```
+
 ```{r}
 access_data<-read.csv("access-to-clean-fuels-for-cooking-vs-gdp-per-capita.csv")
 ```
@@ -26,11 +28,12 @@ access_data<-read.csv("access-to-clean-fuels-for-cooking-vs-gdp-per-capita.csv")
 ```{r}
 kable(head(access_data), caption = "Variables of the Dataset")
 ```
-GDP per capita plays an integral role in shaping the capacity of households and governments to invest in access to clean cooking technologies. Onyeneke et al. (2023) have shown that a 1% increase in GDP per capita significantly increases access to clean fuels by 0.219% in Africa alone. As well as showing a positive correlation between GDP growth and clean energy access. This study underscores that populations with higher disposable income are generally better positioned to have access to cleaner alternatives in fuels. However, there are additional complementary factors that needs to be considered, one of which may be population. However, study from Malah-Kuete (2025) shows that some higher population densities create favourable conditions for access to clean fuels, such as regions in Southeast Asia. Therefore, showing the need for investigation of multiple interacting factors with population and GDP. However, in this section the following two questions will be posed: 
+
+GDP per capita plays an integral role in shaping the capacity of households and governments to invest in access to clean cooking technologies. @onyeneke2023 have shown that a 1% increase in GDP per capita significantly increases access to clean fuels by 0.219% in Africa alone. As well as showing a positive correlation between GDP growth and clean energy access. This study underscores that populations with higher disposable income are generally better positioned to have access to cleaner alternatives in fuels [@scott2023]. However, there are additional complementary factors that needs to be considered, one of which may be population. However, study from @malahkuete2025 shows that some higher population densities create favourable conditions for access to clean fuels, such as regions in Southeast Asia. Therefore, showing the need for investigation of multiple interacting factors with population and GDP. However, in this section the following two questions will be posed:
 
 What is the relationship between GDP per capita and access to clean fuels and what is the relationship between population size and access to clean fuels?
 
-Given the current academic research, it is anticipated that GDP will have a significant relationship with access to clean fuels whereby the population alone will not. 
+Given the current academic research, it is anticipated that GDP will have a significant relationship with access to clean fuels whereby the population alone will not.
 
 ```{r}
 clean_data <- access_data %>%
@@ -48,10 +51,12 @@ ggplot(clean_data, aes(x = GDP.per.capita, y = Access.to.clean.fuels.and.technol
        y = "Access to Clean Fuels (%)") +
   theme_light()
 ```
+
 ```{r}
 # Correlation
 cor(clean_data$`GDP.per.capita`, clean_data$`Access.to.clean.fuels.and.technologies.for.cooking`, use = "complete.obs")
 ```
+
 ```{r tab:sum-table}
 summary_stats <- data.frame(
   Mean_GDP = mean(clean_data$GDP.per.capita),
@@ -65,10 +70,9 @@ kable(summary_stats, caption = "Summary Statistics and Correlation",
       label = "sum-table")
 ```
 
-The scatterplot and correlation investigating the relationship between GDP per capita and access to clean fuels shows 0.63, a moderately strong positive relationship. What this shows is as GDP per capita increases, the access to clean fuels also tends to increase (See Figure \@ref(fig:gg-GDP-plot)).This correlation can also be seen in the correlation table between the two variables (See Table \@ref(tab:sum-table)). 
+The scatterplot and correlation investigating the relationship between GDP per capita and access to clean fuels shows 0.63, a moderately strong positive relationship. What this shows is as GDP per capita increases, the access to clean fuels also tends to increase (See Figure \@ref(fig:gg-GDP-plot)).This correlation can also be seen in the correlation table between the two variables (See Table \@ref(tab:sum-table)).
 
-The value of 0.63 being moderately strong is a good, fairly consistent predictor, however, not perfect. What this may show is that some countries will have high GDP but low access or vice versa. However, generally, wealthier countries will have better infrastructure and energy access allowing for more clean fuels. Other explanatory factors will most likely be able to have stronger, if not additional, predictors for the relationship. 
-
+The value of 0.63 being moderately strong is a good, fairly consistent predictor, however, not perfect. What this may show is that some countries will have high GDP but low access or vice versa. However, generally, wealthier countries will have better infrastructure and energy access allowing for more clean fuels. Other explanatory factors will most likely be able to have stronger, if not additional, predictors for the relationship.
 
 What is the relationship between population size and access to clean fuels?
 
@@ -94,6 +98,7 @@ ggplot(clean_data, aes(x = Population, y = `Access.to.clean.fuels.and.technologi
        y = "Access to Clean Fuels (%)") +
   theme_minimal()
 ```
+
 ```{r}
 # Correlation
 cor(clean_data$`Population`, clean_data$`Access.to.clean.fuels.and.technologies.for.cooking`, use = "complete.obs")
@@ -112,14 +117,13 @@ kable(summary_stats1, caption = "Summary Statistics and Correlation",
       label = "sum-table1")
 ```
 
-Investigating the relationship between population and access to clean fuels comparatively is quite weak and this is shown by the weak negative relationship of -0.01. This correlation can also be seen in the correlation table between the two variables (See Figure \@ref(tab:sum-table1)). From the scatterplot it can be seen that the correlation line slopes slightly downward, echoing the weak negative relationship, indicating that countries with larger population tends to have slightly lower access to clean fuels on average, but the effect is not strong (See Figure \@ref(fig:gg-Pop-plot)). 
+Investigating the relationship between population and access to clean fuels comparatively is quite weak and this is shown by the weak negative relationship of -0.01. This correlation can also be seen in the correlation table between the two variables (See Figure \@ref(tab:sum-table1)). From the scatterplot it can be seen that the correlation line slopes slightly downward, echoing the weak negative relationship, indicating that countries with larger population tends to have slightly lower access to clean fuels on average, but the effect is not strong (See Figure \@ref(fig:gg-Pop-plot)).
 
-For this relationship investigation the scatter plot shows a number of vertical stripes. This is shown as there are many countries with similar population sizes and differing accesses to clean fuels. A hex plot was also selected to indicate how many countries share similar population sizes in areas of access to clean fuels (See Figure \@ref(fig:gg-Hex-plot)). This relationship shown is a clear indication that population alone cannot explain much of the variation in access to clean fuels, much like the academic research indicates. 
+For this relationship investigation the scatter plot shows a number of vertical stripes. This is shown as there are many countries with similar population sizes and differing accesses to clean fuels. A hex plot was also selected to indicate how many countries share similar population sizes in areas of access to clean fuels (See Figure \@ref(fig:gg-Hex-plot)). This relationship shown is a clear indication that population alone cannot explain much of the variation in access to clean fuels, much like the academic research indicates.
 
 ## Question 3:
-How does each region compare in access to clean fuels for cooking?
-The following section examines the difference in access to clean fuels for cooking for each region.
 
+How does each region compare in access to clean fuels for cooking? The following section examines the difference in access to clean fuels for cooking for each region.
 
 ```{r Loading libraries and data, include=FALSE}
 library(bookdown)
@@ -144,8 +148,6 @@ options(digits = 2)
 csv1 = read.csv("Data/access-to-clean-fuels-for-cooking-vs-gdp-per-capita.csv")
 # csv
 ```
-
-
 
 ```{r csv clean data}
 csv2 <- csv1 %>%
@@ -189,7 +191,6 @@ country_filtered_in <- unique(reg_filtered_in$Country)
 reg <- reg_filtered_in
 ```
 
-
 ```{r Formatting data for figure 3.1}
 reg_wide <- reg %>%
   # pivot wider for the years
@@ -206,7 +207,6 @@ reg_wide <- transform(reg_wide, Access_change = `2023` - `2000`)
 <br>
 
 ### Question 3 table - Access statistics by region
-
 
 ```{r Creating 3.1 table, message = FALSE}
 # We want the mean
@@ -265,9 +265,7 @@ reg_table <- reg_merge4 %>%
 
 ```
 
-The following table provides summary statistics to compare each region.
-It shows the max, min and mean for each region in 2023, the change of the average in the past 15 years, and what percentage of the region was above the global average of `r avg_2023`%.
-
+The following table provides summary statistics to compare each region. It shows the max, min and mean for each region in 2023, the change of the average in the past 15 years, and what percentage of the region was above the global average of `r avg_2023`%.
 
 ```{r, label = "table-access-stats"}
 # table for regional access
@@ -291,16 +289,13 @@ Max_Europe <- reg_table[3, "Mean_2023"]
 Change_Asia <- reg_table[2, "Mean_change"]
 ```
 
-
 From Table \@ref(tab:table-access-stats) we notice the following:
 
-- All regions had at least one country with 100% access
-- Europe had the highest level of access on average at `r Max_Europe`
-- South America was the only region with all countries above the 2023 global average (`r avg_2023`%)
-- Asia had the greatest increase to access at `r Change_Asia` while all other regions were less than 20%
-- Africa has the lowest Min, Mean and Percentage above average
-
-
+-   All regions had at least one country with 100% access
+-   Europe had the highest level of access on average at `r Max_Europe`
+-   South America was the only region with all countries above the 2023 global average (`r avg_2023`%)
+-   Asia had the greatest increase to access at `r Change_Asia` while all other regions were less than 20%
+-   Africa has the lowest Min, Mean and Percentage above average
 
 <br>
 
@@ -345,17 +340,16 @@ fig_3.2 <- ggplotly(reg_box, tooltip = c("Country", "2023"))
 fig_3.2
 ```
 
+*The black dots with no country represent the quartiles*
 
- *The black dots with no country represent the quartiles*
- 
- Figure \@ref(fig:reg-ave-plot) provided the following insights:
- 
- - To be in the highest quartile countries need to have 100% access
- - Europe had the smallest interquartile range, whereas Oceania had the largest
- - Africa was the only region to have their average (as well a their third quartile) below the global average
- 
+Figure \@ref(fig:reg-ave-plot) provided the following insights:
+
+-   To be in the highest quartile countries need to have 100% access
+-   Europe had the smallest interquartile range, whereas Oceania had the largest
+-   Africa was the only region to have their average (as well a their third quartile) below the global average
 
 ## Question 4:
+
 Are there countries that have high access to clean fuels relative to their GDP per capita, and do they have anything in common?
 
 ### Question 4 table - Top ten countries with high access compared to their GDP per capita
@@ -382,7 +376,6 @@ relation <- relation3
 # relation
 ```
 
-
 ```{r Get the top ten}
 high_resid1 <- relation %>% 
   select(Country, Access, GDP_per_capita, Residuals, OWID_world_region, Population) %>%
@@ -406,7 +399,6 @@ high_resid <- high_resid2
 top_ten <- head(high_resid, 10)
 ```
 
-
 ```{r label = "top-ten-table"}
 
 # table for regional access
@@ -425,9 +417,9 @@ kable(top_ten, col.names = c(
 
 Key findings from Table \@ref(tab:top-ten-table)
 
-- At a glance we can see that the countries with the ten highest residuals have a relatively similar GDP per capita within a range of just over $8,000.
-- The countries are from all regions except for Europe and South America
-- All countries have a high level of access, at almost 100%
+-   At a glance we can see that the countries with the ten highest residuals have a relatively similar GDP per capita within a range of just over \$8,000.
+-   The countries are from all regions except for Europe and South America
+-   All countries have a high level of access, at almost 100%
 
 <br>
 
@@ -435,8 +427,7 @@ Key findings from Table \@ref(tab:top-ten-table)
 
 ### Question 4 figure - Distribution of relative high access for GDP per capita
 
-The following visualisation further investigated countries with a GDP per capita under $17,000 similar to the top ten countries from Figure 4.1. The scatterplot showed the region, GDP per capita, and residuals from our regression analysis for each country and indicated the population by the size of each point.
-
+The following visualisation further investigated countries with a GDP per capita under \$17,000 similar to the top ten countries from Figure 4.1. The scatterplot showed the region, GDP per capita, and residuals from our regression analysis for each country and indicated the population by the size of each point.
 
 ```{r Create grpahic 4.2}
 # get only countries with a similar GDP
@@ -470,38 +461,31 @@ resid_distro <- ggplot(resid_vis, aes(y = Residuals,
 
 resid_final <- ggplotly(resid_distro, tooltip = "text")
 ```
+
 ```{r resid-plot, fig.cap= "Residuals distribution",fig.width=9, fig.height= 5, warning = FALSE, fig.align='center'}
 resid_final
 ```
 
-
 Key findings from Figure \@ref(fig:resid-plot):
 
-- Hovering over each point to see their access. Countries need to have almost 80% access to have a residual of 25 or more.
-- It seems that as countries approached $12,000 they reached a higher percentage of access but as they surpassed \$17,000 their residuals decreased since access was already at 100%.
-- Region did not make an impact on having high residuals for the relationship between GDP per capita and Access.
-- Population did not strongly influence whether a country had high access for GDP per capita. For countries with high residuals over 25:
-  + The largest nation was Indonesia with about 281 million people. 
-  + The smallest nation was Nauru with just under 12,000 people.
-  
+-   Hovering over each point to see their access. Countries need to have almost 80% access to have a residual of 25 or more.
+-   It seems that as countries approached \$12,000 they reached a higher percentage of access but as they surpassed \$17,000 their residuals decreased since access was already at 100%.
+-   Region did not make an impact on having high residuals for the relationship between GDP per capita and Access.
+-   Population did not strongly influence whether a country had high access for GDP per capita. For countries with high residuals over 25:
+    -   The largest nation was Indonesia with about 281 million people.
+    -   The smallest nation was Nauru with just under 12,000 people.
+
 <br>
 
 <br>
-  
-## Section analysis(change title later ~250 words):
 
+## Section analysis(change title later \~250 words):
 
 In this section we investigated how region shapes access, and tried to develop an understanding of what characteristics if any countries that had relatively high access for their wealth (measured in GDP per capita) had in common. The purpose was to identify factors that possible contribute to a high percentage of access for the population, and identify countries with conditions that are appropriate for investment into accessible clean fuels for cooking.
 
 From our analysis we found that different regions had vastly different distribution of access between countries. The level of access within a region was mapped to the level of wealth. Regions that were wealthier had more countries with a level of access at 100%. As seen in Figure \@ref(fig:resid-plot), all regions had a average level of access above the global average (`r avg_2023`%) for 2023, except Africa. Africa only had 18.87% of countries above the global average seen in Table \@ref(tab:table-access-stats).
 
-Following on from the regression analysis to determine the relationship between GDP per capita and Access we drilled down on the countries that had the highest level of access for their wealth measured in the positive distance from the regression line or positive residual. Table \@ref(tab:top-ten-table) showed that the top ten countries had a GDP per capita between $8000 and \$17000. Figure \@ref(fig:resid-plot) showed that countries with positive residuals did not have a shared region or population size.
+Following on from the regression analysis to determine the relationship between GDP per capita and Access we drilled down on the countries that had the highest level of access for their wealth measured in the positive distance from the regression line or positive residual. Table \@ref(tab:top-ten-table) showed that the top ten countries had a GDP per capita between \$8000 and \$17000. Figure \@ref(fig:resid-plot) showed that countries with positive residuals did not have a shared region or population size.
 
-## References
-
-Malah-Kuete, F.Y. (2025). Understanding the clean cooking energy access gap among developing
-countries: Sub-Saharan Africa vs. other developing regions. _Energy_, _319(1)_, https://doi.org/10.1016/j.energy.2025.135052
-
-Onyeneke, R.U., Chidiebere-Mark, N.M., Ankrah, D.A., & Onyeneke, L.U. (2023). Determinants of access to clean fuels and technologies for cooking in Africa: a panel autoregressive distributed lag approach. _Environmental Progress and Sustainable Energy 2023_, _42(3)_, https://doi.org/10.1002/ep.14147
-
-Scott, N., Nsengiyaremye, J., Todd, J.F., & Leary. J. (2023). Cooking Fuel Choice and Wellbeing: A Global Perspective. _Energies_, _16_, https://doi.org/10.3390/en16186739 
+# References
+\printbibliography
