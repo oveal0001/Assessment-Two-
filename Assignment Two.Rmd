@@ -1,0 +1,129 @@
+---
+title: 'Assignment 2: Team Project'
+author: "Olivia Veal"
+date: "`r Sys.Date()`"
+output: bookdown::html_document2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(scales)
+library(ggplot2)
+library(knitr)
+
+```
+```{r}
+access_data<-read.csv("access-to-clean-fuels-for-cooking-vs-gdp-per-capita.csv")
+```
+
+```{r}
+kable(head(access_data), caption = "Variables of the Dataset")
+```
+GDP per capita plays an integral role in shaping the capacity of households and governments to invest in access to clean cooking technologies. Onyeneke et al. (2023) have shown that a 1% increase in GDP per capita significantly increases access to clean fuels by 0.219% in Africa alone. As well as showing a positive correlation between GDP growth and clean energy access. This study underscores that populations with higher disposable income are generally better positioned to have access to cleaner alternatives in fuels. However, there are additional complementary factors that needs to be considered, one of which may be population. However, study from Malah-Kuete (2025) shows that some higher population densities create favourable conditions for access to clean fuels, such as regions in Southeast Asia. Therefore, showing the need for investigation of multiple interacting factors with population and GDP. However, in this section the following two questions will be posed: 
+
+What is the relationship between GDP per capita and access to clean fuels and what is the relationship between population size and access to clean fuels?
+
+Given the current academic research, it is anticipated that GDP will have a significant relationship with access to clean fuels whereby the population alone will not. 
+
+```{r}
+clean_data <- access_data %>%
+  select(Entity, Year, `GDP.per.capita`, Population, `Access.to.clean.fuels.and.technologies.for.cooking`) %>%
+  drop_na()
+```
+
+```{r gg-GDP-plot, fig.cap = "Scatterplot investigating the relationship between GDP per capita and access to clean fuels"}
+ggplot(clean_data, aes(x = GDP.per.capita, y = Access.to.clean.fuels.and.technologies.for.cooking)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  scale_x_log10() +
+  labs(title = "Relationship between GDP per capita and Access to Clean Fuels",
+       x = "GDP per capita (log scale)",
+       y = "Access to Clean Fuels (%)") +
+  theme_light()
+```
+```{r}
+# Correlation
+cor(clean_data$`GDP.per.capita`, clean_data$`Access.to.clean.fuels.and.technologies.for.cooking`, use = "complete.obs")
+```
+```{r tab:sum-table}
+summary_stats <- data.frame(
+  Mean_GDP = mean(clean_data$GDP.per.capita),
+  SD_GDP = sd(clean_data$GDP.per.capita),
+  Mean_Access = mean(clean_data$Access.to.clean.fuels.and.technologies.for.cooking),
+  SD_Access = sd(clean_data$Access.to.clean.fuels.and.technologies.for.cooking),
+  Correlation = cor(clean_data$GDP.per.capita, clean_data$Access.to.clean.fuels.and.technologies.for.cooking)
+)
+
+kable(summary_stats, caption = "Summary Statistics and Correlation",
+      label = "sum-table")
+```
+
+The scatterplot and correlation investigating the relationship between GDP per capita and access to clean fuels shows 0.63, a moderately strong positive relationship. What this shows is as GDP per capita increases, the access to clean fuels also tends to increase (See Figure \@ref(fig:gg-GDP-plot)).This correlation can also be seen in the correlation table between the two variables (See Table \@ref(tab:sum-table)). 
+
+The value of 0.63 being moderately strong is a good, fairly consistent predictor, however, not perfect. What this may show is that some countries will have high GDP but low access or vice versa. However, generally, wealthier countries will have better infrastructure and energy access allowing for more clean fuels. Other explanatory factors will most likely be able to have stronger, if not additional, predictors for the relationship. 
+
+
+What is the relationship between population size and access to clean fuels?
+
+```{r gg-Pop-plot, fig.cap = "Scatterplot investigating the relationship between population and access to clean fuels"}
+ggplot(clean_data, aes(x = Population, y = Access.to.clean.fuels.and.technologies.for.cooking)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  scale_x_log10() +
+    labs(title = "Relationship between Population and Access to Clean Fuels",
+       x = "Population (log scale)",
+       y = "Access to Clean Fuels (%)") +
+  theme_light()
+```
+
+```{r gg-Hex-plot, fig.cap = "Scatterplot investigating the relationship between population and access to clean fuels in a hex map"}
+ggplot(clean_data, aes(x = Population, y = `Access.to.clean.fuels.and.technologies.for.cooking`)) +
+  geom_hex(bins = 30) +
+  scale_x_log10() +
+  scale_fill_continuous(type = "viridis") +
+  geom_smooth(method = "lm", color = "blue", se = TRUE) +
+  labs(title = "Population vs Access to Clean Fuels (Density Plot)",
+       x = "Population (log scale)",
+       y = "Access to Clean Fuels (%)") +
+  theme_minimal()
+```
+```{r}
+# Correlation
+cor(clean_data$`Population`, clean_data$`Access.to.clean.fuels.and.technologies.for.cooking`, use = "complete.obs")
+```
+
+```{r tab:sum-table1}
+summary_stats1 <- data.frame(
+  Mean_Population = mean(clean_data$Population),
+  SD_Population = sd(clean_data$Population),
+  Mean_Access = mean(clean_data$Access.to.clean.fuels.and.technologies.for.cooking),
+  SD_Access = sd(clean_data$Access.to.clean.fuels.and.technologies.for.cooking),
+  Correlation = cor(clean_data$Population, clean_data$Access.to.clean.fuels.and.technologies.for.cooking)
+)
+
+kable(summary_stats1, caption = "Summary Statistics and Correlation",
+      label = "sum-table1")
+```
+Investigating the relationship between population and access to clean fuels comparatively is quite weak and this is shown by the weak negative relationship of -0.01. This correlation can also be seen in the correlation table between the two variables (See Figure \@ref(tab:sum-table1)). From the scatterplot it can be seen that the correlation line slopes slightly downward, echoing the weak negative relationship, indicating that countries with larger population tends to have slightly lower access to clean fuels on average, but the effect is not strong (See Figure \@ref(fig:gg-Pop-plot)). 
+
+For this relationship investigation the scatter plot shows a number of vertical stripes. This is shown as there are many countries with similar population sizes and differing accesses to clean fuels. A hex plot was also selected to indicate how many countries share similar population sizes in areas of access to clean fuels (See Figure \@ref(fig:gg-Hex-plot)). This relationship shown is a clear indication that population alone cannot explain much of the variation in access to clean fuels, much like the academic research indicates. 
+
+
+## References
+
+Malah-Kuete, F.Y. (2025). Understanding the clean cooking energy access gap among developing
+countries: Sub-Saharan Africa vs. other developing regions. _Energy_, _319(1)_, https://doi.org/10.1016/j.energy.2025.135052
+
+Onyeneke, R.U., Chidiebere-Mark, N.M., Ankrah, D.A., & Onyeneke, L.U. (2023). Determinants of access to clean fuels and technologies for cooking in Africa: a panel autoregressive distributed lag approach. _Environmental Progress and Sustainable Energy 2023_, _42(3)_, https://doi.org/10.1002/ep.14147
+
+Scott, N., Nsengiyaremye, J., Todd, J.F., & Leary. J. (2023). Cooking Fuel Choice and Wellbeing: A Global Perspective. _Energies_, _16_, https://doi.org/10.3390/en16186739 
+
+
+
+
+
+
