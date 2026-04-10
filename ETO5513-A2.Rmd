@@ -212,8 +212,6 @@ reg_wide <- reg %>%
 reg_wide <- transform(reg_wide, Access_change = `2023` - `2000`)
 ```
 
-<br>
-
 #### Question 3 Table - Access statistics by region
 
 ```{r Creating 3.1 table, message = FALSE}
@@ -296,8 +294,6 @@ Max_Europe <- reg_table[3, "Mean_2023"]
 
 Change_Asia <- reg_table[2, "Mean_change"]
 ```
-
-<br>
 
 #### Question 3 Figure - Regional average boxplot
 
@@ -408,8 +404,6 @@ kable(top_ten, col.names = c(
   )
 
 ```
-
-<br>
 
 #### Question 4 Figure - Distribution of relative high access for GDP per capita
 
